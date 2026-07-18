@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --ink: #111827;
+  --ink-muted: #6b7280;
+  --ink-soft: #9ca3af;
+  --line: #e5e7eb;
+  --header: #1f2937;
+  --header-ink: #f9fafb;
+  --accent: #111827;
+  --execute: #059669;
+  --execute-soft: #d1fae5;
+  --hold: #d97706;
+  --hold-soft: #ffedd5;
+  --shadow: 0 1px 2px rgba(17, 24, 39, 0.06), 0 8px 24px rgba(17, 24, 39, 0.04);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-pill: 999px;
+}
+
+@theme inline {
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-fraunces);
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #e8eef7 0%, transparent 55%),
+    radial-gradient(900px 420px at 100% 0%, #f3ebe4 0%, transparent 50%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.badge-engineering {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.badge-culture {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-infrastructure {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.badge-product {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.badge-process {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-security {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-drawer {
+  animation: drawer-in 280ms ease-out;
+}
+
+.animate-fade {
+  animation: fade-in 200ms ease-out;
+}
+
+.animate-card {
+  animation: card-rise 420ms ease-out both;
+}
