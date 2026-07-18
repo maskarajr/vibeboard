@@ -1,6 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { getAppOrigin } from "@/lib/app-url";
+
+function redirectToPath(path: string) {
+  return NextResponse.redirect(new URL(path, `${getAppOrigin()}/`));
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -47,9 +53,7 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/auth");
 
   if (!user && !isAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+    return redirectToPath("/login");
   }
 
   if (user) {
@@ -60,15 +64,11 @@ export async function updateSession(request: NextRequest) {
       .maybeSingle();
 
     if (member && (pathname === "/join" || pathname === "/login")) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
-      return NextResponse.redirect(url);
+      return redirectToPath("/");
     }
 
     if (!member && !isAuthRoute) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/join";
-      return NextResponse.redirect(url);
+      return redirectToPath("/join");
     }
   }
 

@@ -53,7 +53,3 @@ export async function completeJoinForUser(params: {
   return { ok: true };
 }
 
-export function authEmailRedirectTo(): string {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  return `${appUrl.replace(/\/$/, "")}/auth/callback`;
-}

@@ -10,11 +10,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Wants email bound to the pseudonym so identity can be recovered after clearing cookies, while keeping auth simple.
 - Prefers managed backends with less manual integration; chose Supabase over self-hosted alternatives.
 - Building Vibeboard for personal use and a small trusted team, not a public multi-tenant product.
+- Prefers Supabase newer publishable/secret API key names over legacy anon/service_role keys.
+- Wants idea categories to start empty and grow from categories members enter when creating ideas (no seeded list).
 
 ## Learned Workspace Facts
 
 - Vibeboard is a collaborative idea board: team members add ideas, open a detail view to discuss/comment, and vote Execute or Hold.
 - Git remote for this workspace is `https://github.com/maskarajr/vibeboard.git`.
 - App stack is Next.js with Supabase (`@supabase/ssr`, `@supabase/supabase-js`).
-- Intended hosting target for now is Render.
-- `.cursor` is listed in `.gitignore`.
+- Hosted on Render for the team's live app; custom domain work may go through GoDaddy.
+- Auth email delivery is wired through Resend (Supabase custom SMTP).
+- `.cursor` and `.residuals/` are listed in `.gitignore`.

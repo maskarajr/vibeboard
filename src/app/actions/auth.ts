@@ -2,11 +2,9 @@
 
 import { redirect } from "next/navigation";
 
-import {
-  authEmailRedirectTo,
-  completeJoinForUser,
-} from "@/lib/complete-join";
+import { authEmailRedirectTo } from "@/lib/app-url";
 import { isValidInviteCode } from "@/lib/auth";
+import { completeJoinForUser } from "@/lib/complete-join";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { normalizeEmail } from "@/lib/utils";
 
