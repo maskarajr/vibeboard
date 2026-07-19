@@ -33,6 +33,7 @@ export type CommentRow = {
   author_id: string;
   body: string;
   created_at: string;
+  updated_at: string | null;
 };
 
 export type IdeaCardData = {
@@ -56,6 +57,7 @@ export type CommentData = {
   id: string;
   body: string;
   createdAt: string;
+  updatedAt: string | null;
   author: {
     id: string;
     displayName: string;

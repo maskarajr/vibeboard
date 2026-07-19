@@ -28,7 +28,7 @@ export async function fetchBoardData(currentMemberId: string): Promise<{
     supabase.from("votes").select("id, idea_id, member_id, value"),
     supabase
       .from("comments")
-      .select("id, idea_id, author_id, body, created_at")
+      .select("id, idea_id, author_id, body, created_at, updated_at")
       .order("created_at", { ascending: true }),
   ]);
 
@@ -95,6 +95,7 @@ export async function fetchBoardData(currentMemberId: string): Promise<{
       id: row.id,
       body: row.body,
       createdAt: row.created_at,
+      updatedAt: row.updated_at,
       author: {
         id: row.author_id,
         displayName: memberMap.get(row.author_id)?.display_name ?? "Unknown",

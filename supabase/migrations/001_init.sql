@@ -47,6 +47,7 @@ create table public.comments (
   author_id uuid not null references public.members (id) on delete cascade,
   body text not null,
   created_at timestamptz not null default now(),
+  updated_at timestamptz,
   constraint comments_body_length check (char_length(body) between 1 and 2000)
 );
 
@@ -92,16 +93,16 @@ create policy "ideas_insert_authenticated"
     and exists (select 1 from public.members m where m.id = auth.uid())
   );
 
-create policy "ideas_update_authenticated"
+create policy "ideas_update_own"
   on public.ideas for update
   to authenticated
-  using (exists (select 1 from public.members m where m.id = auth.uid()))
-  with check (exists (select 1 from public.members m where m.id = auth.uid()));
+  using (author_id = auth.uid())
+  with check (author_id = auth.uid());
 
-create policy "ideas_delete_authenticated"
+create policy "ideas_delete_own"
   on public.ideas for delete
   to authenticated
-  using (exists (select 1 from public.members m where m.id = auth.uid()));
+  using (author_id = auth.uid());
 
 -- votes
 create policy "votes_select_authenticated"
@@ -142,6 +143,12 @@ create policy "comments_insert_own"
     and exists (select 1 from public.members m where m.id = auth.uid())
   );
 
+create policy "comments_update_own"
+  on public.comments for update
+  to authenticated
+  using (author_id = auth.uid())
+  with check (author_id = auth.uid());
+
 create policy "comments_delete_own"
   on public.comments for delete
   to authenticated
@@ -161,7 +168,7 @@ grant all on public.ideas to service_role;
 grant select, insert, update, delete on public.votes to authenticated;
 grant all on public.votes to service_role;
 
-grant select, insert, delete on public.comments to authenticated;
+grant select, insert, update, delete on public.comments to authenticated;
 grant all on public.comments to service_role;
 
 grant usage on type public.vote_value to authenticated, service_role;

@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import {
   addComment,
   castVote,
+  deleteComment,
   deleteIdea,
   setDecision,
+  updateComment,
 } from "@/app/actions/ideas";
 import {
   IconBolt,
@@ -27,10 +29,12 @@ import {
 export function IdeaDrawer({
   idea,
   comments,
+  currentMemberId,
   onClose,
 }: {
   idea: IdeaCardData;
   comments: CommentData[];
+  currentMemberId: string;
   onClose: () => void;
 }) {
   const router = useRouter();
@@ -39,19 +43,27 @@ export function IdeaDrawer({
   const [error, setError] = useState<string | null>(null);
   const [pendingVote, setPendingVote] = useState<VoteValue | null>(null);
   const [commentVote, setCommentVote] = useState<VoteValue | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editBody, setEditBody] = useState("");
   const [pending, startTransition] = useTransition();
   const split = voteSplit(idea.executeCount, idea.holdCount);
+  const isAuthor = idea.author.id === currentMemberId;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        if (editingCommentId) {
+          setEditingCommentId(null);
+          setEditBody("");
+          return;
+        }
         onClose();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     panelRef.current?.focus();
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  }, [onClose, editingCommentId]);
 
   function run(action: () => Promise<{ ok: true } | { ok: false; error: string }>) {
     setError(null);
@@ -88,28 +100,30 @@ export function IdeaDrawer({
             {idea.category}
           </span>
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              aria-label="Delete idea"
-              className="rounded-full p-2 text-[var(--ink-muted)] hover:bg-red-50 hover:text-red-700"
-              onClick={() => {
-                if (
-                  window.confirm(
-                    "Delete this idea and all of its votes and comments?",
-                  )
-                ) {
-                  run(async () => {
-                    const result = await deleteIdea(idea.id);
-                    if (result.ok) {
-                      onClose();
-                    }
-                    return result;
-                  });
-                }
-              }}
-            >
-              <IconTrash />
-            </button>
+            {isAuthor ? (
+              <button
+                type="button"
+                aria-label="Delete idea"
+                className="rounded-full p-2 text-[var(--ink-muted)] hover:bg-red-50 hover:text-red-700"
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Delete this idea and all of its votes and comments?",
+                    )
+                  ) {
+                    run(async () => {
+                      const result = await deleteIdea(idea.id);
+                      if (result.ok) {
+                        onClose();
+                      }
+                      return result;
+                    });
+                  }
+                }}
+              >
+                <IconTrash />
+              </button>
+            ) : null}
             <button
               type="button"
               aria-label="Close"
@@ -194,35 +208,46 @@ export function IdeaDrawer({
               </button>
             </div>
 
-            <div className="border-t border-[var(--line)] pt-3">
-              <p className="mb-2 text-sm font-medium">Make a final decision:</p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => run(() => setDecision(idea.id, "execute"))}
-                  className="rounded-[var(--radius-pill)] border border-[var(--execute)]/40 px-3 py-1.5 text-sm text-[var(--execute)] hover:bg-[var(--execute-soft)]"
-                >
-                  Mark: Execute
-                </button>
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => run(() => setDecision(idea.id, "hold"))}
-                  className="rounded-[var(--radius-pill)] border border-[var(--hold)]/40 px-3 py-1.5 text-sm text-[var(--hold)] hover:bg-[var(--hold-soft)]"
-                >
-                  Mark: Hold
-                </button>
+            {isAuthor ? (
+              <div className="border-t border-[var(--line)] pt-3">
+                <p className="mb-2 text-sm font-medium">Make a final decision:</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => run(() => setDecision(idea.id, "execute"))}
+                    className="rounded-[var(--radius-pill)] border border-[var(--execute)]/40 px-3 py-1.5 text-sm text-[var(--execute)] hover:bg-[var(--execute-soft)]"
+                  >
+                    Mark: Execute
+                  </button>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => run(() => setDecision(idea.id, "hold"))}
+                    className="rounded-[var(--radius-pill)] border border-[var(--hold)]/40 px-3 py-1.5 text-sm text-[var(--hold)] hover:bg-[var(--hold-soft)]"
+                  >
+                    Mark: Hold
+                  </button>
+                </div>
+                {idea.decision ? (
+                  <p className="mt-2 text-sm text-[var(--ink-muted)]">
+                    Current decision:{" "}
+                    <strong className="text-[var(--ink)]">
+                      {idea.decision === "execute" ? "Execute" : "Hold"}
+                    </strong>
+                  </p>
+                ) : null}
               </div>
-              {idea.decision ? (
-                <p className="mt-2 text-sm text-[var(--ink-muted)]">
-                  Current decision:{" "}
+            ) : idea.decision ? (
+              <div className="border-t border-[var(--line)] pt-3">
+                <p className="text-sm text-[var(--ink-muted)]">
+                  Final decision:{" "}
                   <strong className="text-[var(--ink)]">
                     {idea.decision === "execute" ? "Execute" : "Hold"}
                   </strong>
                 </p>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
           </section>
 
           <section className="space-y-4">
@@ -230,42 +255,128 @@ export function IdeaDrawer({
               {comments.length} comments
             </h3>
             <ul className="space-y-4">
-              {comments.map((comment) => (
-                <li key={comment.id} className="flex gap-3">
-                  <span
-                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-semibold text-white"
-                    style={{
-                      background: avatarColor(comment.author.displayName),
-                    }}
-                  >
-                    {getInitials(comment.author.displayName)}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <span className="font-medium">
-                        {comment.author.displayName}
-                      </span>
-                      {comment.vote ? (
-                        <span
-                          className={`rounded-[var(--radius-pill)] px-2 py-0.5 text-xs font-medium ${
-                            comment.vote === "execute"
-                              ? "bg-[var(--execute-soft)] text-[var(--execute)]"
-                              : "bg-[var(--hold-soft)] text-[var(--hold)]"
-                          }`}
-                        >
-                          {comment.vote === "execute" ? "Execute" : "Hold"}
+              {comments.map((comment) => {
+                const isOwn = comment.author.id === currentMemberId;
+                const isEditing = editingCommentId === comment.id;
+                const wasEdited = Boolean(comment.updatedAt);
+
+                return (
+                  <li key={comment.id} className="flex gap-3">
+                    <span
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-semibold text-white"
+                      style={{
+                        background: avatarColor(comment.author.displayName),
+                      }}
+                    >
+                      {getInitials(comment.author.displayName)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <span className="font-medium">
+                          {comment.author.displayName}
                         </span>
-                      ) : null}
-                      <span className="text-[var(--ink-soft)]">
-                        {formatShortDate(comment.createdAt)}
-                      </span>
+                        {comment.vote ? (
+                          <span
+                            className={`rounded-[var(--radius-pill)] px-2 py-0.5 text-xs font-medium ${
+                              comment.vote === "execute"
+                                ? "bg-[var(--execute-soft)] text-[var(--execute)]"
+                                : "bg-[var(--hold-soft)] text-[var(--hold)]"
+                            }`}
+                          >
+                            {comment.vote === "execute" ? "Execute" : "Hold"}
+                          </span>
+                        ) : null}
+                        <span className="text-[var(--ink-soft)]">
+                          {formatShortDate(comment.createdAt)}
+                          {wasEdited && comment.updatedAt
+                            ? ` · edited ${formatShortDate(comment.updatedAt)}`
+                            : null}
+                        </span>
+                      </div>
+
+                      {isEditing ? (
+                        <div className="mt-2 space-y-2">
+                          <textarea
+                            value={editBody}
+                            onChange={(event) => setEditBody(event.target.value)}
+                            rows={3}
+                            className="w-full resize-none rounded-[var(--radius-sm)] border border-[var(--line)] px-3 py-2.5 text-sm outline-none ring-[var(--ink)] focus:ring-2"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              disabled={pending || !editBody.trim()}
+                              onClick={() => {
+                                run(async () => {
+                                  const result = await updateComment(
+                                    comment.id,
+                                    editBody,
+                                  );
+                                  if (result.ok) {
+                                    setEditingCommentId(null);
+                                    setEditBody("");
+                                  }
+                                  return result;
+                                });
+                              }}
+                              className="rounded-[var(--radius-pill)] bg-[var(--accent)] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              disabled={pending}
+                              onClick={() => {
+                                setEditingCommentId(null);
+                                setEditBody("");
+                              }}
+                              className="rounded-[var(--radius-pill)] bg-[var(--bg)] px-3 py-1.5 text-sm text-[var(--ink-muted)]"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="mt-1 text-sm leading-relaxed text-[var(--ink)]">
+                            {comment.body}
+                          </p>
+                          {isOwn ? (
+                            <div className="mt-1.5 flex gap-3 text-xs">
+                              <button
+                                type="button"
+                                disabled={pending}
+                                className="text-[var(--ink-muted)] hover:text-[var(--ink)]"
+                                onClick={() => {
+                                  setEditingCommentId(comment.id);
+                                  setEditBody(comment.body);
+                                  setError(null);
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                disabled={pending}
+                                className="text-[var(--ink-muted)] hover:text-red-700"
+                                onClick={() => {
+                                  if (
+                                    window.confirm("Delete this comment?")
+                                  ) {
+                                    run(() => deleteComment(comment.id));
+                                  }
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          ) : null}
+                        </>
+                      )}
                     </div>
-                    <p className="mt-1 text-sm leading-relaxed text-[var(--ink)]">
-                      {comment.body}
-                    </p>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </section>
 

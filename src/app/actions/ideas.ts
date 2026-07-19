@@ -74,16 +74,33 @@ export async function setDecision(
   ideaId: string,
   decision: VoteValue,
 ): Promise<IdeaActionResult> {
-  await requireMember();
+  const member = await requireMember();
   if (!isVoteValue(decision)) {
     return { ok: false, error: "Invalid decision." };
   }
 
   const supabase = await createClient();
+  const { data: idea, error: lookupError } = await supabase
+    .from("ideas")
+    .select("author_id")
+    .eq("id", ideaId)
+    .maybeSingle();
+
+  if (lookupError) {
+    return { ok: false, error: lookupError.message };
+  }
+  if (!idea || idea.author_id !== member.id) {
+    return {
+      ok: false,
+      error: "Only the author can make the final decision.",
+    };
+  }
+
   const { error } = await supabase
     .from("ideas")
     .update({ decision })
-    .eq("id", ideaId);
+    .eq("id", ideaId)
+    .eq("author_id", member.id);
 
   if (error) {
     return { ok: false, error: error.message };
@@ -94,9 +111,27 @@ export async function setDecision(
 }
 
 export async function deleteIdea(ideaId: string): Promise<IdeaActionResult> {
-  await requireMember();
+  const member = await requireMember();
   const supabase = await createClient();
-  const { error } = await supabase.from("ideas").delete().eq("id", ideaId);
+
+  const { data: idea, error: lookupError } = await supabase
+    .from("ideas")
+    .select("author_id")
+    .eq("id", ideaId)
+    .maybeSingle();
+
+  if (lookupError) {
+    return { ok: false, error: lookupError.message };
+  }
+  if (!idea || idea.author_id !== member.id) {
+    return { ok: false, error: "Only the author can delete this idea." };
+  }
+
+  const { error } = await supabase
+    .from("ideas")
+    .delete()
+    .eq("id", ideaId)
+    .eq("author_id", member.id);
 
   if (error) {
     return { ok: false, error: error.message };
@@ -137,6 +172,62 @@ export async function addComment(formData: FormData): Promise<IdeaActionResult> 
     author_id: member.id,
     body,
   });
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function updateComment(
+  commentId: string,
+  body: string,
+): Promise<IdeaActionResult> {
+  const member = await requireMember();
+  const trimmed = body.trim();
+
+  if (!commentId || !trimmed) {
+    return { ok: false, error: "Comment cannot be empty." };
+  }
+  if (trimmed.length > 2000) {
+    return { ok: false, error: "Comment must be 2000 characters or fewer." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("comments")
+    .update({
+      body: trimmed,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", commentId)
+    .eq("author_id", member.id);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function deleteComment(
+  commentId: string,
+): Promise<IdeaActionResult> {
+  const member = await requireMember();
+
+  if (!commentId) {
+    return { ok: false, error: "Comment not found." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("comments")
+    .delete()
+    .eq("id", commentId)
+    .eq("author_id", member.id);
 
   if (error) {
     return { ok: false, error: error.message };

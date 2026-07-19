@@ -11,10 +11,12 @@ import type { BoardFilter, CommentData, IdeaCardData } from "@/lib/types";
 import { matchesFilter } from "@/lib/utils";
 
 export function BoardClient({
+  currentMemberId,
   displayName,
   ideas,
   commentsByIdea,
 }: {
+  currentMemberId: string;
   displayName: string;
   ideas: IdeaCardData[];
   commentsByIdea: Record<string, CommentData[]>;
@@ -106,6 +108,7 @@ export function BoardClient({
         <IdeaDrawer
           idea={selectedIdea}
           comments={commentsByIdea[selectedIdea.id] ?? []}
+          currentMemberId={currentMemberId}
           onClose={() => setSelectedId(null)}
         />
       ) : null}

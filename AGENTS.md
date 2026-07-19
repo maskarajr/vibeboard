@@ -18,6 +18,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Vibeboard is a collaborative idea board: team members add ideas, open a detail view to discuss/comment, and vote Execute or Hold.
 - Git remote for this workspace is `https://github.com/maskarajr/vibeboard.git`.
 - App stack is Next.js with Supabase (`@supabase/ssr`, `@supabase/supabase-js`).
-- Hosted on Render for the team's live app; custom domain work may go through GoDaddy.
-- Auth email delivery is wired through Resend (Supabase custom SMTP).
+- Hosted on Render; live custom domain is `vb.alifera.xyz` (GoDaddy).
+- Auth email delivery is wired through Resend (Supabase custom SMTP); verified sending domain is `mail.alifera.xyz`.
+- Member pseudonyms are stored in `public.members.display_name`, not in Supabase Auth user metadata.
+- Post-auth redirects must use `NEXT_PUBLIC_APP_URL`, not `request.url` (Render's internal host is `localhost:10000`).
 - `.cursor` and `.residuals/` are listed in `.gitignore`.
