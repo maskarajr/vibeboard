@@ -6,7 +6,7 @@ import type {
   VoteValue,
 } from "@/lib/types";
 
-type MemberLite = Pick<Member, "id" | "display_name">;
+type MemberLite = Pick<Member, "id" | "display_name" | "avatar_url">;
 
 export async function fetchBoardData(currentMemberId: string): Promise<{
   ideas: IdeaCardData[];
@@ -24,7 +24,7 @@ export async function fetchBoardData(currentMemberId: string): Promise<{
       .from("ideas")
       .select("id, author_id, title, description, category, decision, created_at")
       .order("created_at", { ascending: false }),
-    supabase.from("members").select("id, display_name"),
+    supabase.from("members").select("id, display_name, avatar_url"),
     supabase.from("votes").select("id, idea_id, member_id, value"),
     supabase
       .from("comments")
@@ -80,6 +80,7 @@ export async function fetchBoardData(currentMemberId: string): Promise<{
       author: {
         id: idea.author_id,
         displayName: author?.display_name ?? "Unknown",
+        avatarUrl: author?.avatar_url ?? null,
       },
       executeCount,
       holdCount,
@@ -91,6 +92,7 @@ export async function fetchBoardData(currentMemberId: string): Promise<{
   const commentsByIdea: Record<string, CommentData[]> = {};
   for (const row of comments ?? []) {
     const list = commentsByIdea[row.idea_id] ?? [];
+    const author = memberMap.get(row.author_id);
     list.push({
       id: row.id,
       body: row.body,
@@ -98,7 +100,8 @@ export async function fetchBoardData(currentMemberId: string): Promise<{
       updatedAt: row.updated_at,
       author: {
         id: row.author_id,
-        displayName: memberMap.get(row.author_id)?.display_name ?? "Unknown",
+        displayName: author?.display_name ?? "Unknown",
+        avatarUrl: author?.avatar_url ?? null,
       },
       vote:
         (voteMapByIdea.get(row.idea_id) ?? []).find(

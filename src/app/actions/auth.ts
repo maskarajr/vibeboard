@@ -6,23 +6,12 @@ import { authEmailRedirectTo } from "@/lib/app-url";
 import { isValidInviteCode } from "@/lib/auth";
 import { completeJoinForUser } from "@/lib/complete-join";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { normalizeEmail } from "@/lib/utils";
+import { normalizeEmail, validateUsername } from "@/lib/utils";
 
 export type AuthActionResult =
   | { ok: true; step: "ready_for_link"; email: string; redirectTo: string }
   | { ok: true; step: "joined" | "logged_in" }
   | { ok: false; error: string };
-
-function validatePseudonym(name: string): string | null {
-  const trimmed = name.trim();
-  if (trimmed.length < 2) {
-    return "Pseudonym must be at least 2 characters.";
-  }
-  if (trimmed.length > 40) {
-    return "Pseudonym must be 40 characters or fewer.";
-  }
-  return null;
-}
 
 /** Validate invite + store join intent. Client sends the magic link (PKCE). */
 export async function prepareJoin(
@@ -40,7 +29,7 @@ export async function prepareJoin(
     return { ok: false, error: "Enter a valid email address." };
   }
 
-  const nameError = validatePseudonym(displayName);
+  const nameError = validateUsername(displayName);
   if (nameError) {
     return { ok: false, error: nameError };
   }

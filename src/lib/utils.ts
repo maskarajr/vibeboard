@@ -103,3 +103,43 @@ export function normalizeEmail(email: string): string {
 export function isVoteValue(value: string): value is VoteValue {
   return value === "execute" || value === "hold";
 }
+
+export const USERNAME_COOLDOWN_DAYS = 14;
+
+export function validateUsername(name: string): string | null {
+  const trimmed = name.trim();
+  if (trimmed.length < 2) {
+    return "Username must be at least 2 characters.";
+  }
+  if (trimmed.length > 40) {
+    return "Username must be 40 characters or fewer.";
+  }
+  return null;
+}
+
+export function usernameCooldownEndsAt(
+  changedAt: string | null,
+): Date | null {
+  if (!changedAt) {
+    return null;
+  }
+  const ends = new Date(changedAt);
+  ends.setUTCDate(ends.getUTCDate() + USERNAME_COOLDOWN_DAYS);
+  return ends;
+}
+
+export function isUsernameCooldownActive(changedAt: string | null): boolean {
+  const ends = usernameCooldownEndsAt(changedAt);
+  if (!ends) {
+    return false;
+  }
+  return ends.getTime() > Date.now();
+}
+
+export function formatCooldownDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}

@@ -9,6 +9,8 @@ create table public.members (
   id uuid primary key references auth.users (id) on delete cascade,
   email text not null unique,
   display_name text not null unique,
+  display_name_changed_at timestamptz,
+  avatar_url text,
   created_at timestamptz not null default now()
 );
 
@@ -173,3 +175,42 @@ grant all on public.comments to service_role;
 
 grant usage on type public.vote_value to authenticated, service_role;
 grant usage on type public.decision_value to authenticated, service_role;
+
+create or replace function public.enforce_member_profile_guards()
+returns trigger
+language plpgsql
+as $$
+declare
+  expected_avatar_prefix text;
+begin
+  if new.display_name is distinct from old.display_name then
+    if old.display_name_changed_at is not null
+       and old.display_name_changed_at > now() - interval '14 days' then
+      raise exception 'Username can only be changed every 14 days.';
+    end if;
+    new.display_name_changed_at := now();
+  elsif new.display_name_changed_at is distinct from old.display_name_changed_at then
+    raise exception 'display_name_changed_at cannot be updated directly.';
+  end if;
+
+  if new.avatar_url is distinct from old.avatar_url and new.avatar_url is not null then
+    if auth.uid() is null or auth.uid() is distinct from new.id then
+      raise exception 'Invalid avatar update.';
+    end if;
+
+    expected_avatar_prefix :=
+      '/storage/v1/object/public/avatars/' || new.id::text || '/';
+
+    if position(expected_avatar_prefix in new.avatar_url) = 0 then
+      raise exception 'avatar_url must reference your uploaded avatar.';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger members_profile_guards
+  before update on public.members
+  for each row
+  execute function public.enforce_member_profile_guards();

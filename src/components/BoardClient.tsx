@@ -13,11 +13,13 @@ import { matchesFilter } from "@/lib/utils";
 export function BoardClient({
   currentMemberId,
   displayName,
+  avatarUrl,
   ideas,
   commentsByIdea,
 }: {
   currentMemberId: string;
   displayName: string;
+  avatarUrl: string | null;
   ideas: IdeaCardData[];
   commentsByIdea: Record<string, CommentData[]>;
 }) {
@@ -52,6 +54,7 @@ export function BoardClient({
     <div className="flex min-h-full flex-1 flex-col">
       <BoardHeader
         displayName={displayName}
+        avatarUrl={avatarUrl}
         onNewIdea={() => setNewIdeaOpen(true)}
       />
 

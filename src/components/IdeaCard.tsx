@@ -1,13 +1,9 @@
 "use client";
 
 import { IconBolt, IconChat, IconClock, IconMark } from "@/components/Icons";
+import { MemberAvatar } from "@/components/MemberAvatar";
 import type { IdeaCardData } from "@/lib/types";
-import {
-  avatarColor,
-  categoryClass,
-  formatShortDate,
-  getInitials,
-} from "@/lib/utils";
+import { categoryClass, formatShortDate } from "@/lib/utils";
 
 export function IdeaCard({
   idea,
@@ -75,12 +71,11 @@ export function IdeaCard({
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <span
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-semibold text-white"
-            style={{ background: avatarColor(idea.author.displayName) }}
-          >
-            {getInitials(idea.author.displayName)}
-          </span>
+          <MemberAvatar
+            displayName={idea.author.displayName}
+            avatarUrl={idea.author.avatarUrl}
+            size="sm"
+          />
           <span className="truncate text-sm text-[var(--ink-muted)]">
             {idea.author.displayName}
           </span>

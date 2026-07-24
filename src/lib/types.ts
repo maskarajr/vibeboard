@@ -6,6 +6,8 @@ export type Member = {
   id: string;
   email: string;
   display_name: string;
+  display_name_changed_at: string | null;
+  avatar_url: string | null;
   created_at: string;
 };
 
@@ -46,6 +48,7 @@ export type IdeaCardData = {
   author: {
     id: string;
     displayName: string;
+    avatarUrl: string | null;
   };
   executeCount: number;
   holdCount: number;
@@ -61,6 +64,7 @@ export type CommentData = {
   author: {
     id: string;
     displayName: string;
+    avatarUrl: string | null;
   };
   vote: VoteValue | null;
 };

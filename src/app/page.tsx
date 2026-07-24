@@ -16,6 +16,7 @@ export default async function HomePage() {
     <BoardClient
       currentMemberId={member.id}
       displayName={member.display_name}
+      avatarUrl={member.avatar_url}
       ideas={ideas}
       commentsByIdea={commentsByIdea}
     />

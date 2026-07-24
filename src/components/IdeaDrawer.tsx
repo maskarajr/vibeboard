@@ -17,12 +17,11 @@ import {
   IconClose,
   IconTrash,
 } from "@/components/Icons";
+import { MemberAvatar } from "@/components/MemberAvatar";
 import type { CommentData, IdeaCardData, VoteValue } from "@/lib/types";
 import {
-  avatarColor,
   categoryClass,
   formatShortDate,
-  getInitials,
   voteSplit,
 } from "@/lib/utils";
 
@@ -262,14 +261,11 @@ export function IdeaDrawer({
 
                 return (
                   <li key={comment.id} className="flex gap-3">
-                    <span
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-xs font-semibold text-white"
-                      style={{
-                        background: avatarColor(comment.author.displayName),
-                      }}
-                    >
-                      {getInitials(comment.author.displayName)}
-                    </span>
+                    <MemberAvatar
+                      displayName={comment.author.displayName}
+                      avatarUrl={comment.author.avatarUrl}
+                      size="md"
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2 text-sm">
                         <span className="font-medium">
