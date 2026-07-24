@@ -42,7 +42,7 @@ export function LoginForm({
   return (
     <AuthShell
       title="Welcome back"
-      subtitle="Enter the email you joined with. We’ll send a magic link — no password."
+      subtitle="Enter the email you joined with. We'll send a magic link - no password."
       footer={
         <>
           New here?{" "}

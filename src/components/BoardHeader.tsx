@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 
 import { signOut } from "@/app/actions/auth";
 import { MemberAvatar } from "@/components/MemberAvatar";
@@ -15,8 +14,6 @@ export function BoardHeader({
   avatarUrl: string | null;
   onNewIdea: () => void;
 }) {
-  const [profileHovered, setProfileHovered] = useState(false);
-
   return (
     <header className="border-b border-black/10 bg-[var(--header)] text-[var(--header-ink)]">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
@@ -37,25 +34,8 @@ export function BoardHeader({
         <div className="flex items-center gap-3">
           <Link
             href="/profile"
-            className="inline-flex items-center gap-2.5 rounded-[var(--radius-pill)] p-2 pr-3.5 text-sm font-medium text-white/90"
+            className="profile-chip inline-flex items-center gap-2.5 rounded-[var(--radius-pill)] p-2 pr-3.5 text-sm font-medium"
             title="Your profile"
-            onMouseEnter={() => setProfileHovered(true)}
-            onMouseLeave={() => setProfileHovered(false)}
-            onFocus={() => setProfileHovered(true)}
-            onBlur={() => setProfileHovered(false)}
-            style={{
-              backgroundColor: profileHovered
-                ? "rgba(0, 0, 0, 0.42)"
-                : "rgba(0, 0, 0, 0.28)",
-              boxShadow: profileHovered
-                ? "inset 0 2px 5px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -1px 0 rgba(255, 255, 255, 0.03)"
-                : "inset 0 1px 3px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(255, 255, 255, 0.04)",
-              transition:
-                "background-color 150ms ease, box-shadow 150ms ease, color 150ms ease",
-              color: profileHovered
-                ? "rgba(255, 255, 255, 1)"
-                : "rgba(255, 255, 255, 0.9)",
-            }}
           >
             <MemberAvatar
               displayName={displayName}

@@ -16,7 +16,7 @@ export function CheckEmailPanel({
       <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-[var(--ink-muted)]">
         <li>Open the newest email from Supabase Auth.</li>
         <li>
-          Click the link in <strong>this same browser</strong> (Chrome/Edge —
+          Click the link in <strong>this same browser</strong> (Chrome/Edge -
           not the Gmail in-app browser if you can avoid it).
         </li>
         <li>You should land on the board signed in.</li>

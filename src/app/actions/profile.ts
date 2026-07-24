@@ -27,7 +27,7 @@ export async function updateUsername(
   }
 
   if (displayName === member.display_name) {
-    return { ok: false, error: "That’s already your username." };
+    return { ok: false, error: "That's already your username." };
   }
 
   if (isUsernameCooldownActive(member.display_name_changed_at)) {

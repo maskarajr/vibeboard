@@ -150,7 +150,7 @@ export function ProfileForm({
             className="w-full rounded-[var(--radius-sm)] border border-[var(--line)] bg-[var(--bg)] px-3 py-2.5 text-[var(--ink-muted)] outline-none"
           />
           <span className="block text-xs text-[var(--ink-soft)]">
-            Used to recover your account. Can’t be changed here.
+            Used to recover your account. Can't be changed here.
           </span>
         </label>
 
